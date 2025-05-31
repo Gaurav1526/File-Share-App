@@ -36,7 +36,7 @@ SECRET_KEY = 'django-insecure-(*)ckrtoi-(3^^w^a=+liq$3_2oljxu-u&!%=ohxtndh+y*f*p
 
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = ['127.0.0.1', '.vercel.app']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -79,7 +79,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'file_sharing_app.wsgi.application'
+WSGI_APPLICATION = 'file_sharing_app.wsgi.app'
 
 
 
