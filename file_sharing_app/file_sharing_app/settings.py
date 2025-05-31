@@ -23,10 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: don't run with debug turned on in production!
 import os
-import os
 import environ
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
 
 load_dotenv()
 
@@ -83,12 +83,18 @@ WSGI_APPLICATION = 'file_sharing_app.wsgi.app'
 
 
 
-# Initialise environment
+
+
 env = environ.Env()
+
+# Optional: load .env file (locally)
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 DATABASES = {
-    'default': env.db()  # Reads from DATABASE_URL
+    'default': env.db(
+        'DATABASE_URL',
+        default='postgresql://sharedb_byxg_user:hMGq9F4dFJek9dMi7jJep7jcMXcchI2T@dpg-d0st1eqli9vc73dc44i0-a.oregon-postgres.render.com/sharedb_byxg'
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
