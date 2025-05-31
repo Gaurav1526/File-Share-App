@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "file_sharing_app/wsgi.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "file_sharing_app/wsgi.py"
+    }
+  ],
+  "build": {
+    "env": {
+      "DJANGO_SETTINGS_MODULE": "file_sharing_app.settings",
+      "DATABASE_URL": "postgresql://sharedb_byxg_user:hMGq9F4dFJek9dMi7jJep7jcMXcchI2T@dpg-d0st1eqli9vc73dc44i0-a.oregon-postgres.render.com/sharedb_byxg"
+    }
+  }
+}
+
+  
