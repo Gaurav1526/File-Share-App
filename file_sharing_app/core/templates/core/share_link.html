@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+  <div class="card shadow-sm mb-4">
+    <div class="card-header">
+      <h3 class="mb-0">Share File: {{ file.original_name }}</h3>
+    </div>
+    <div class="card-body">
+      <div class="alert alert-success">
+        <i class="bi bi-check-circle"></i> Your file is ready to share!
+      </div>
+      
+      <div class="row">
+        <div class="col-md-8">
+          <div class="mb-4">
+            <label class="form-label">Shareable Link</label>
+            <div class="input-group">
+              <input type="text" class="form-control" 
+                     id="shareLink" 
+                     value="{{ share_url }}" 
+                     readonly>
+              <button class="btn btn-outline-secondary" id="copyBtn">
+                <i class="bi bi-clipboard"></i> Copy
+              </button>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <label class="form-label">Link Settings</label>
+            <ul class="list-group">
+              <li class="list-group-item d-flex justify-content-between">
+                <span>Status</span>
+                <span class="badge bg-{% if share_link.is_active %}success{% else %}danger{% endif %}">
+                  {% if share_link.is_active %}Active{% else %}Expired{% endif %}
+                </span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between">
+                <span>Expiration</span>
+                <span>
+                  {% if share_link.expires_at %}
+                    {{ share_link.expires_at|date:"M d, Y H:i" }}
+                  {% else %}
+                    Never
+                  {% endif %}
+                </span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between">
+                <span>Password Protected</span>
+                <span>
+                  {% if share_link.password %}
+                    <i class="bi bi-check text-success"></i>
+                  {% else %}
+                    <i class="bi bi-x text-danger"></i>
+                  {% endif %}
+                </span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between">
+                <span>Download Limit</span>
+                <span>
+                  {% if share_link.max_downloads %}
+                    {{ share_link.download_count }}/{{ share_link.max_downloads }}
+                  {% else %}
+                    Unlimited
+                  {% endif %}
+                </span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-body text-center">
+              <!-- Server-generated QR code -->
+              <div class="mb-3">
+                <img src="data:image/png;base64,{{ qr_img_data }}" 
+                     alt="QR Code for {{ file.original_name }}" 
+                     class="img-fluid" style="max-width: 200px;">
+              </div>
+              
+              <!-- QR Action Buttons -->
+              <div class="d-flex justify-content-center gap-2">
+                <button class="btn btn-sm btn-outline-primary" 
+                        id="downloadQRButton">
+                  <i class="bi bi-download"></i> Download
+                </button>
+                
+                <button class="btn btn-sm btn-outline-success" 
+                        id="shareQRButton"
+                        data-bs-toggle="modal" 
+                        data-bs-target="#shareQRModal">
+                  <i class="bi bi-share"></i> Share
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- QR Sharing Modal -->
+      <div class="modal fade" id="shareQRModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Share QR Code</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p>Share this QR code via:</p>
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <a href="#" class="btn btn-outline-primary" id="shareWhatsApp">
+                  <i class="bi bi-whatsapp"></i> WhatsApp
+                </a>
+                <a href="#" class="btn btn-outline-info" id="shareTelegram">
+                  <i class="bi bi-telegram"></i> Telegram
+                </a>
+                <a href="#" class="btn btn-outline-primary" id="shareEmail">
+                  <i class="bi bi-envelope"></i> Email
+                </a>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Direct QR Code Link:</label>
+                <div class="input-group">
+                  <input type="text" class="form-control" 
+                         id="qrLink" 
+                         value="{{ request.scheme }}://{{ request.get_host }}{% url 'download_qr' share_link.token %}" 
+                         readonly>
+                  <button class="btn btn-outline-secondary" id="copyQrLink">
+                    <i class="bi bi-clipboard"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="d-flex justify-content-end mt-4">
+        <a href="{% url 'file_list' %}" class="btn btn-outline-secondary me-2">
+          Back to Files
+        </a>
+        <a href="{% url 'upload' %}" class="btn btn-primary">
+          Share Another File
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Copy to clipboard functionality for share link
+    const copyBtn = document.getElementById('copyBtn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', function() {
+        const shareLinkInput = document.getElementById('shareLink');
+        shareLinkInput.select();
+        document.execCommand('copy');
+        
+        // Show feedback
+        const originalHTML = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<i class="bi bi-check"></i> Copied!';
+        
+        setTimeout(() => {
+          copyBtn.innerHTML = originalHTML;
+        }, 2000);
+      });
+    }
+    
+    // Copy to clipboard for QR link
+    const copyQrLinkBtn = document.getElementById('copyQrLink');
+    if (copyQrLinkBtn) {
+      copyQrLinkBtn.addEventListener('click', function() {
+        const qrLinkInput = document.getElementById('qrLink');
+        qrLinkInput.select();
+        document.execCommand('copy');
+        
+        // Show feedback
+        const originalHTML = copyQrLinkBtn.innerHTML;
+        copyQrLinkBtn.innerHTML = '<i class="bi bi-check"></i>';
+        
+        setTimeout(() => {
+          copyQrLinkBtn.innerHTML = originalHTML;
+        }, 2000);
+      });
+    }
+    
+    // Download QR button functionality
+    const downloadQRButton = document.getElementById('downloadQRButton');
+    if (downloadQRButton) {
+      downloadQRButton.addEventListener('click', function() {
+        // Create a temporary link
+        const link = document.createElement('a');
+        link.href = "{% url 'download_qr' share_link.token %}";
+        link.download = 'qr_code_{{ file.original_name|slugify }}.png';
+        
+        // Append to body and trigger click
+        document.body.appendChild(link);
+        link.click();
+        
+        // Clean up
+        document.body.removeChild(link);
+      });
+    }
+    
+    // Share QR via WhatsApp
+    const shareWhatsApp = document.getElementById('shareWhatsApp');
+    if (shareWhatsApp) {
+      shareWhatsApp.addEventListener('click', function(e) {
+        e.preventDefault();
+        const qrUrl = document.getElementById('qrLink').value;
+        const fileName = "{{ file.original_name|escapejs }}";
+        const text = `Download QR code for ${fileName}: ${qrUrl}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+      });
+    }
+    
+    // Share QR via Telegram
+    const shareTelegram = document.getElementById('shareTelegram');
+    if (shareTelegram) {
+      shareTelegram.addEventListener('click', function(e) {
+        e.preventDefault();
+        const qrUrl = document.getElementById('qrLink').value;
+        const fileName = "{{ file.original_name|escapejs }}";
+        const text = `QR code for ${fileName}`;
+        window.open(`https://t.me/share/url?url=${encodeURIComponent(qrUrl)}&text=${encodeURIComponent(text)}`, '_blank');
+      });
+    }
+    
+    // Share QR via Email
+    const shareEmail = document.getElementById('shareEmail');
+    if (shareEmail) {
+      shareEmail.addEventListener('click', function(e) {
+        e.preventDefault();
+        const qrUrl = document.getElementById('qrLink').value;
+        const fileName = "{{ file.original_name|escapejs }}";
+        const subject = `QR Code for ${fileName}`;
+        const body = `Download the QR code:\n${qrUrl}`;
+        window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      });
+    }
+  });
+</script>
+{% endblock %}

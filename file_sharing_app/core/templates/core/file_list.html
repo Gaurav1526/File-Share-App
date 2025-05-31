@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>My Files</h1>
+    <a href="{% url 'upload' %}" class="btn btn-primary">
+      <i class="bi bi-plus"></i> Upload New File
+    </a>
+  </div>
+  
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>File Name</th>
+              <th>Type</th>
+              <th>Size</th>
+              <th>Upload Date</th>
+              <th>Downloads</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for file in files %}
+            <tr>
+              <td>{{ file.original_name }}</td>
+              <td>{{ file.file_type|upper }}</td>
+              <td>{{ file.size|filesizeformat }}</td>
+              <td>{{ file.upload_date|date:"M d, Y" }}</td>
+              <td>{{ file.download_count }}</td>
+              <td>
+                {% if file.is_active %}
+                <span class="badge bg-success">Active</span>
+                {% else %}
+                <span class="badge bg-secondary">Expired</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="btn-group">
+                  <a href="{% url 'generate_share_link' file.id %}" 
+                     class="btn btn-sm btn-outline-primary" 
+                     title="Share">
+                    <i class="bi bi-share"></i>
+                  </a>
+                  <a href="{% url 'download' file.sharelink.token %}" 
+                     class="btn btn-sm btn-outline-success" 
+                     title="Download">
+                    <i class="bi bi-download"></i>
+                  </a>
+                  <a href="{% url 'delete_file' file.id %}" 
+                     class="btn btn-sm btn-outline-danger" 
+                     title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center">No files uploaded yet</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Pagination -->
+      {% if files.has_other_pages %}
+      <nav aria-label="Files pagination">
+        <ul class="pagination justify-content-center">
+          {% if files.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page=1" aria-label="First">
+              <span aria-hidden="true">&laquo;&laquo;</span>
+            </a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" href="?page={{ files.previous_page_number }}" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+          {% endif %}
+          
+          {% for i in files.paginator.page_range %}
+          <li class="page-item {% if files.number == i %}active{% endif %}">
+            <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+          </li>
+          {% endfor %}
+          
+          {% if files.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ files.next_page_number }}" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" href="?page={{ files.paginator.num_pages }}" aria-label="Last">
+              <span aria-hidden="true">&raquo;&raquo;</span>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
