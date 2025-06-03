@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      <div class="card shadow">
+        <div class="card-body p-4">
+          <h2 class="mb-4 text-center">Download Logs</h2>
+
+          {% if logs %}
+            <div class="table-responsive">
+              <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                  <tr>
+                    <th>#</th>
+                    <th>Downloaded At</th>
+                    <th>IP Address</th>
+                    <th>User Agent</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for log in logs %}
+                    <tr>
+                      <td>{{ forloop.counter }}</td>
+                      <td>{{ log.downloaded_at }}</td>
+                      <td>{{ log.ip_address }}</td>
+                      <td>{{ log.user_agent|truncatechars:80 }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="alert alert-info text-center">
+              No downloads yet for this file.
+            </div>
+          {% endif %}
+
+          <div class="text-center mt-4">
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

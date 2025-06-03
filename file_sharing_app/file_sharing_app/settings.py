@@ -123,7 +123,15 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# ✅ Updated block to fix read-only filesystem upload error
+if DEBUG:
+    # Local development
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+else:
+    # Production: Use writable directory
+    MEDIA_ROOT = '/tmp/media'
+    os.makedirs(MEDIA_ROOT, exist_ok=True)
 
 LOGIN_URL = '/auth/login/'
 LOGOUT_REDIRECT_URL = '/'
@@ -143,7 +151,7 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -152,4 +160,14 @@ if not DEBUG:
 
 
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your_email@gmail.com'
+EMAIL_HOST_PASSWORD = 'your_app_password'  # Use App Password if using Gmail
+DEFAULT_FROM_EMAIL = 'FileShare <noreply@yourdomain.com>'
 
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
